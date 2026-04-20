@@ -1,0 +1,14 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Digi Romania",
+        "description": "Enter Digi session cookie and update interval.",
+        "data": {
+          "cookie": "Digi session cookie",
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  }
+}

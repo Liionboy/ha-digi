@@ -1,0 +1,10 @@
+{
+  "domain": "digi_ro",
+  "name": "Digi România",
+  "version": "0.1.0",
+  "documentation": "https://www.digi.ro",
+  "requirements": [],
+  "codeowners": ["@Liionboy"],
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}
