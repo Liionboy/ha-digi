@@ -1,20 +1,114 @@
 # ha-digi (MVP)
 
-Custom component Home Assistant pentru Digi România (MVP) bazat pe sesiune web autenticată.
+Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată pe sesiune web autentificată.
 
-## Ce face
-- Citește ultima factură din contul Digi
-- Expune senzori:
-  - total ultima factură
-  - rest de plată
-  - status
-  - data facturii
+## Status
 
-## Instalare rapidă
-1. Copiază `custom_components/digi_ro` în `config/custom_components/` din Home Assistant.
+- Versiune: `0.1.0` (MVP)
+- Domeniu integrare: `digi_ro`
+- Auth: cookie de sesiune DIGI (login deja făcut în browser, inclusiv SMS/2FA)
+
+---
+
+## Ce oferă acum
+
+Senzori pentru **ultima factură**:
+
+- `Digi total ultima factură` (`lei`)
+- `Digi rest de plată` (`lei`)
+- `Digi status ultima factură`
+- `Digi data ultimei facturi`
+
+Atribute utile:
+- `invoice_id`
+- `attribution`
+
+---
+
+## Instalare
+
+1. Copiază folderul:
+   - `custom_components/digi_ro`
+   în Home Assistant la:
+   - `<config>/custom_components/digi_ro`
+
 2. Restart Home Assistant.
-3. Add Integration -> Digi România.
-4. Introdu cookie-ul de sesiune Digi (din browser, după login cu SMS) și intervalul de update.
 
-## Notă
-Acesta este un MVP. Dacă sesiunea expiră (2FA), senzorii devin unavailable până la reautentificare/cookie nou.
+3. Mergi la:
+   - **Settings → Devices & Services → Add Integration**
+   - caută **Digi România**
+
+4. Completează:
+   - `Cookie sesiune Digi`
+   - `Interval update (secunde)` (recomandat 1800)
+
+---
+
+## Cum iei cookie-ul de sesiune Digi
+
+> Important: fă întâi login normal pe https://www.digi.ro (cu SMS/2FA dacă e activ)
+
+### Chrome / Edge / Brave
+
+1. Deschide `https://www.digi.ro/my-account/invoices`
+2. Apasă `F12` → tab **Application** (sau Storage)
+3. Mergi la **Cookies** → `https://www.digi.ro`
+4. Copiază cookie-urile relevante în format header:
+   - `name=value; name2=value2; ...`
+5. Pune acest string în câmpul `Cookie sesiune Digi` din integrare
+
+Dacă nu merge din prima, folosește cookie-urile complete din request-ul către `/my-account/invoices`.
+
+---
+
+## Cum funcționează (tehnic)
+
+Flux MVP:
+
+1. GET `/my-account/invoices` pentru a extrage `invoice_id`
+2. POST `/my-account/invoices/details?invoice_id=...`
+3. Parse HTML și extragere:
+   - total
+   - rest
+   - status
+   - data facturii
+
+---
+
+## Limitări cunoscute
+
+- Dacă sesiunea expiră (sau invalidare server-side), senzorii devin `unavailable` până actualizezi cookie-ul.
+- DIGI poate schimba markup-ul HTML/flow-ul de autentificare oricând.
+- MVP-ul nu implementează încă re-login automat cu 2FA.
+
+---
+
+## Troubleshooting
+
+### 1) Integrarea apare, dar senzorii sunt unavailable
+- Cookie expirat sau incomplet
+- Refă login pe Digi și actualizează cookie-ul în integrare
+
+### 2) Nu extrage corect total/rest
+- DIGI a schimbat structura HTML
+- Deschide issue cu un fragment anonim de răspuns HTML din invoices/details
+
+### 3) Update prea des
+- Evită intervale foarte mici (sub 300 sec)
+- Recomandat: 900-3600 sec
+
+---
+
+## Roadmap
+
+- [ ] Reauth flow asistat în UI
+- [ ] Istoric facturi (lista completă)
+- [ ] Senzori suplimentari (servicii, scadență, PDF URL)
+- [ ] Cache + fallback la ultima valoare validă
+
+---
+
+## Disclaimer
+
+Acest proiect este neoficial, nu este afiliat DIGI.
+Folosește-l pe propria răspundere.
