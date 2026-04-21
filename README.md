@@ -4,9 +4,9 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.15` (MVP)
+- Versiune: `0.1.16` (MVP)
 - Domeniu integrare: `digi_ro`
-- Auth: cookie de sesiune DIGI (login deja făcut în browser, inclusiv SMS/2FA)
+- Auth: login user/parolă + 2FA (SMS) sau cookie sesiune DIGI
 - Brand assets (HACS/HA):
   - `icon.png` + `logo.png` în root repo
   - `custom_components/digi_ro/brand/icon.png` + `logo.png`
@@ -52,9 +52,14 @@ Atribute utile:
    - **Settings → Devices & Services → Add Integration**
    - caută **Digi România**
 
-4. Completează:
-   - `Cookie sesiune Digi`
+4. Completează (recomandat):
+   - metoda `login`
+   - `username` + `password`
+   - cod `2FA` (SMS)
+   - selectare adresă/cont
    - `Interval update (secunde)` (recomandat 1800)
+
+   Alternativ: metoda `cookie` cu `Cookie sesiune Digi`.
 
 ---
 
@@ -100,9 +105,9 @@ Flux MVP:
 
 ## Limitări cunoscute
 
-- Dacă sesiunea expiră (sau invalidare server-side), senzorii devin `unavailable` până actualizezi cookie-ul.
+- Dacă sesiunea expiră (sau invalidare server-side), integrarea cere reauth.
 - DIGI poate schimba markup-ul HTML/flow-ul de autentificare oricând.
-- MVP-ul nu implementează încă re-login automat cu 2FA.
+- 2FA depinde de endpoint-urile web Digi (fără API oficial public stabil).
 
 ---
 
@@ -121,6 +126,10 @@ Flux MVP:
 - Recomandat: 900-3600 sec
 
 ---
+
+## Noutăți v0.1.16
+- Fix `sensor.digi_nume_cont` (`account_name`) pentru a evita `unknown`
+- Fallback robust la extragerea numelui de cont (bulk endpoint + HTML + default safe)
 
 ## Noutăți v0.1.15
 - Fix endpoint-uri reale Digi pentru 2FA/login/address select (eliminat 404 la send code)
