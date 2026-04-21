@@ -4,9 +4,10 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.0` (MVP)
+- Versiune: `0.1.1` (MVP)
 - Domeniu integrare: `digi_ro`
 - Auth: cookie de sesiune DIGI (login deja făcut în browser, inclusiv SMS/2FA)
+- Logo integrare: `custom_components/digi_ro/icon.svg` (sursă: digi.ro)
 
 ---
 
