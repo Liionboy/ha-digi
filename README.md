@@ -4,7 +4,7 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.17` (MVP)
+- Versiune: `0.1.18` (MVP)
 - Domeniu integrare: `digi_ro`
 - Auth: login user/parolă + 2FA (SMS) sau cookie sesiune DIGI
 - Brand assets (HACS/HA):
@@ -154,6 +154,10 @@ sensors:
 - Recomandat: 900-3600 sec
 
 ---
+
+## Noutăți v0.1.18
+- Card UI îmbunătățit: culori status, mini-graph pentru facturi recente, buton Reauth
+- Compatibil în continuare cu `sensors:` pentru 2+ conturi
 
 ## Noutăți v0.1.17
 - Card custom Lovelace `custom:digi-ro-card` pentru senzori DIGI
