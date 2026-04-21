@@ -4,7 +4,7 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.16` (MVP)
+- Versiune: `0.1.17` (MVP)
 - Domeniu integrare: `digi_ro`
 - Auth: login user/parolă + 2FA (SMS) sau cookie sesiune DIGI
 - Brand assets (HACS/HA):
@@ -111,6 +111,34 @@ Flux MVP:
 
 ---
 
+## Card Lovelace DIGI (custom)
+
+Fișier card inclus: `custom_components/digi_ro/www/digi-ro-card.js`
+
+Exemplu card:
+
+```yaml
+type: custom:digi-ro-card
+title: DIGI România
+```
+
+Dacă vrei alt set de entități (ex: al doilea cont), poți seta explicit:
+
+```yaml
+type: custom:digi-ro-card
+sensors:
+  total: sensor.digi_total_ultima_factura_2
+  rest: sensor.digi_rest_de_plata_2
+  status: sensor.digi_status_ultima_factura_2
+  date: sensor.digi_data_ultimei_facturi_2
+  due: sensor.digi_scadenta_ultima_factura_2
+  paid: sensor.digi_factura_achitata_2
+  account: sensor.digi_nume_cont_2
+  address: sensor.digi_adresa_curenta_2
+  recent: sensor.digi_facturi_recente_2
+  health: sensor.digi_health_2
+```
+
 ## Troubleshooting
 
 ### 1) Integrarea apare, dar senzorii sunt unavailable
@@ -126,6 +154,10 @@ Flux MVP:
 - Recomandat: 900-3600 sec
 
 ---
+
+## Noutăți v0.1.17
+- Card custom Lovelace `custom:digi-ro-card` pentru senzori DIGI
+- Suport override entități în config card (util pentru al 2-lea cont)
 
 ## Noutăți v0.1.16
 - Fix `sensor.digi_nume_cont` (`account_name`) pentru a evita `unknown`
