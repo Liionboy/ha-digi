@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from urllib.parse import quote
+from html import unescape
 
 from aiohttp import ClientSession, ClientTimeout
 
@@ -107,17 +108,21 @@ class DigiApiClient:
             "id": inv,
         }
         details_html = await self._post_text(details_path, payload, "/my-account/invoices")
+        details_html = unescape(details_html)
         plain = re.sub(r"<[^>]+>", " ", details_html)
         plain = re.sub(r"\s+", " ", plain).strip()
 
-        date_match = re.search(r"din data de\s+([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain, re.I)
-        invoice_no_match = re.search(r"\bFactura\s+([A-Z0-9\- ]{4,})\b", plain)
-        total_match = re.search(r"\bTotal\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain, re.I)
-        rest_match = re.search(r"\bRest\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain, re.I)
-        status_match = re.search(r"\bStatus\s+([A-Za-zĂÂÎȘȚăâîșț\-]+)", plain)
-        due_match = re.search(r"\bScaden(?:ta|ță|\u021b\u0103)\s*[:\-]?\s*([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain, re.I)
+        # Normalizează formate gen "51 .86" / "51 ,86" / "51&period;86"
+        plain_norm = re.sub(r"(\d)\s*[\.,]\s*(\d{2})", r"\1.\2", plain)
 
-        services_count = len(set(re.findall(r"\b1\.([0-9]{1,2})\b", plain)))
+        date_match = re.search(r"din data de\s+([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain_norm, re.I)
+        invoice_no_match = re.search(r"\bFactura\s+([A-Z0-9\- ]{4,})\b", plain_norm)
+        total_match = re.search(r"\bTotal\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain_norm, re.I)
+        rest_match = re.search(r"\bRest\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain_norm, re.I)
+        status_match = re.search(r"\bStatus\s+([A-Za-zĂÂÎȘȚăâîșț\-]+)", plain_norm)
+        due_match = re.search(r"\bScaden(?:ta|ță|\u021b\u0103)\s*[:\-]?\s*([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain_norm, re.I)
+
+        services_count = len(set(re.findall(r"\b1\.([0-9]{1,2})\b", plain_norm)))
         status = status_match.group(1) if status_match else None
         is_paid = None
         if status:
