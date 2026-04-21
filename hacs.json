@@ -1,0 +1,6 @@
+{
+  "name": "Digi România",
+  "content_in_root": false,
+  "domains": ["digi_ro"],
+  "render_readme": true
+}
