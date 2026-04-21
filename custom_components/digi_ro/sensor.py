@@ -20,10 +20,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         DigiInvoiceSensor(coordinator, "invoice_id", "Digi invoice ID", None, "mdi:identifier"),
         DigiInvoiceSensor(coordinator, "invoice_number", "Digi număr factură", None, "mdi:barcode"),
         DigiInvoiceSensor(coordinator, "is_paid", "Digi factură achitată", None, "mdi:check-decagram"),
+        DigiInvoiceSensor(coordinator, "has_debt", "Digi are rest de plată", None, "mdi:alert-circle"),
         DigiInvoiceSensor(coordinator, "services_count", "Digi poziții servicii factură", None, "mdi:format-list-numbered"),
         DigiInvoiceSensor(coordinator, "account_name", "Digi nume cont", None, "mdi:account"),
         DigiInvoiceSensor(coordinator, "current_address", "Digi adresă curentă", None, "mdi:home-city"),
         DigiInvoiceSensor(coordinator, "invoices_count", "Digi număr facturi detectate", None, "mdi:file-multiple"),
+        DigiRecentInvoicesSensor(coordinator),
     ])
 
 
@@ -49,3 +51,31 @@ class DigiInvoiceSensor(CoordinatorEntity, SensorEntity):
             "invoice_id": d.get("invoice_id"),
             "attribution": ATTRIBUTION,
         }
+
+
+class DigiRecentInvoicesSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_name = "Digi facturi recente"
+        self._attr_unique_id = "digi_ro_recent_invoices"
+        self._attr_icon = "mdi:history"
+
+    @property
+    def native_value(self):
+        data = self.coordinator.data or {}
+        return len(data.get("recent_invoices") or [])
+
+    @property
+    def extra_state_attributes(self):
+        d = self.coordinator.data or {}
+        attrs = {
+            "invoice_id": d.get("invoice_id"),
+            "attribution": ATTRIBUTION,
+        }
+        recent = d.get("recent_invoices") or []
+        for i, inv in enumerate(recent[:5], start=1):
+            attrs[f"Factura {i} - data emitere"] = inv.get("issue_date")
+            attrs[f"Factura {i} - scadență"] = inv.get("due_date")
+            attrs[f"Factura {i} - categorie"] = inv.get("category")
+            attrs[f"Factura {i} - valoare (lei)"] = inv.get("amount_lei")
+        return attrs

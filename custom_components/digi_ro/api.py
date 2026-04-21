@@ -54,6 +54,28 @@ class DigiApiClient:
         if not invoice_ids:
             raise DigiApiError("Nu am găsit invoice_id. Posibil sesiune expirată.")
 
+        # Extragere rapidă istoric facturi din lista principală
+        html_plain = re.sub(r"<[^>]+>", " ", html)
+        html_plain = re.sub(r"\s+", " ", html_plain).strip()
+        recent_invoices: list[dict] = []
+        for m in re.finditer(
+            r"(\d{2}[-./]\d{2}[-./]\d{4})\s+([A-ZĂÂÎȘȚa-zăâîșț ]{3,40})\s+"
+            r"(\d{2}[-./]\d{2}[-./]\d{4})\s+([0-9]+(?:[.,][0-9]{2})?)\s+lei",
+            html_plain,
+            re.I,
+        ):
+            issue_date, category, due_date, amount = m.groups()
+            recent_invoices.append(
+                {
+                    "issue_date": issue_date,
+                    "category": category.strip(),
+                    "due_date": due_date,
+                    "amount_lei": amount.replace(",", "."),
+                }
+            )
+            if len(recent_invoices) >= 5:
+                break
+
         account_name = None
         try:
             bulk_raw = await self._post_text(
@@ -74,7 +96,7 @@ class DigiApiClient:
         except Exception:
             account_name = None
 
-        address_match = re.search(r"Toate adresele\s+(.+?)\s+Serviciile mele", re.sub(r"<[^>]+>", " ", html), re.I | re.S)
+        address_match = re.search(r"Toate adresele\s+(.+?)\s+Serviciile mele", html_plain, re.I | re.S)
         current_address = re.sub(r"\s+", " ", address_match.group(1)).strip() if address_match else None
         invoices_count = len(invoice_ids)
 
@@ -102,6 +124,13 @@ class DigiApiClient:
             status_l = status.lower()
             is_paid = ("achitat" in status_l) or ("platit" in status_l) or ("plătit" in status_l)
 
+        has_debt = None
+        if rest_match:
+            try:
+                has_debt = float(rest_match.group(1).replace(",", ".")) > 0
+            except ValueError:
+                has_debt = None
+
         return {
             "invoice_id": inv,
             "invoice_number": invoice_no_match.group(1).strip() if invoice_no_match else None,
@@ -111,9 +140,11 @@ class DigiApiClient:
             "rest_lei": rest_match.group(1).replace(",", ".") if rest_match else None,
             "status": status,
             "is_paid": is_paid,
+            "has_debt": has_debt,
             "services_count": services_count,
             "account_name": account_name,
             "current_address": current_address,
             "invoices_count": invoices_count,
+            "recent_invoices": recent_invoices,
             "raw_excerpt": plain[:800],
         }

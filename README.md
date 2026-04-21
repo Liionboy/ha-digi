@@ -4,7 +4,7 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.3` (MVP)
+- Versiune: `0.1.4` (MVP)
 - Domeniu integrare: `digi_ro`
 - Auth: cookie de sesiune DIGI (login deja făcut în browser, inclusiv SMS/2FA)
 - Logo integrare: `custom_components/digi_ro/icon.svg` (sursă: digi.ro)
@@ -23,10 +23,12 @@ Senzori pentru **ultima factură**:
 - `Digi invoice ID`
 - `Digi număr factură`
 - `Digi factură achitată` (boolean)
+- `Digi are rest de plată` (boolean)
 - `Digi poziții servicii factură`
 - `Digi nume cont`
 - `Digi adresă curentă`
 - `Digi număr facturi detectate`
+- `Digi facturi recente` (count + atribute pentru ultimele până la 5 facturi)
 
 Atribute utile:
 - `invoice_id`
