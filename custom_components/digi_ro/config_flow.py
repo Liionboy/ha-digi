@@ -6,7 +6,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import DigiApiClient, DigiAuthError, DigiTwoFactorError, TwoFactorContext
+from .api import DigiApiClient, DigiAuthError, DigiTwoFactorError, DigiTwoFactorRequired, TwoFactorContext
 from .const import (
     AUTH_METHOD_COOKIE,
     AUTH_METHOD_LOGIN,
@@ -84,7 +84,14 @@ class DigiConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_show_form(step_id="login", data_schema=vol.Schema({vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str}), errors={"base": "cannot_connect"})
 
         if "/auth/2fa" in final_url:
-            ctx = await self._api.get_2fa_context(html)
+            try:
+                ctx = await self._api.get_2fa_context(html)
+            except DigiTwoFactorRequired:
+                return self.async_show_form(
+                    step_id="login",
+                    data_schema=vol.Schema({vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str}),
+                    errors={"base": "cannot_connect"},
+                )
             self._twofa_context = {"methods": ctx.methods, "html": ctx.html}
             return await self.async_step_2fa_method()
 

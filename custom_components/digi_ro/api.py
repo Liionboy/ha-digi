@@ -222,6 +222,7 @@ class DigiApiClient:
     def _parse_2fa_context(self, html: str) -> dict[str, dict[str, Any]]:
         methods: dict[str, dict[str, Any]] = {}
         hidden = self._extract_hidden_inputs(html)
+        html_lower = html.lower()
         phone_value = None
         for key in ("form-phone-number-confirm", "phone", "phone-number-confirm", "form_phone_number_confirm"):
             value = hidden.get(key)
@@ -229,9 +230,24 @@ class DigiApiClient:
                 phone_value = value
                 break
         if not phone_value:
+            for key, value in hidden.items():
+                key_l = key.lower()
+                if ("phone" in key_l or "telefon" in key_l) and value and RE_HEX32.fullmatch(value):
+                    phone_value = value
+                    break
+        if not phone_value:
             match = RE_PHONE_PARAM.search(html)
             if match:
                 phone_value = match.group(1)
+        if not phone_value and (
+            "trimite sms" in html_lower
+            or "codul primit prin sms" in html_lower
+            or "cod de siguranță prin sms" in html_lower
+            or "cod de siguranta prin sms" in html_lower
+        ):
+            tokens = list(dict.fromkeys(RE_HEX32.findall(html)))
+            if len(tokens) == 1:
+                phone_value = tokens[0]
         if phone_value:
             methods["sms"] = {
                 "send_url": TWO_FA_SEND_URL,

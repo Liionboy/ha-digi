@@ -1,7 +1,7 @@
 {
   "domain": "digi_ro",
   "name": "Digi România",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "documentation": "https://www.digi.ro",
   "requirements": [],
   "codeowners": ["@Liionboy"],
