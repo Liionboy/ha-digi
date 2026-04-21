@@ -54,6 +54,30 @@ class DigiApiClient:
         if not invoice_ids:
             raise DigiApiError("Nu am găsit invoice_id. Posibil sesiune expirată.")
 
+        account_name = None
+        try:
+            bulk_raw = await self._post_text(
+                "/app-user-info-bulk-xhr",
+                {"disableUserInfo": "", "isBusinessSection": "0"},
+                "/my-account/invoices",
+            )
+            bulk = __import__("json").loads(bulk_raw)
+            my_user_html = bulk.get("my-user", "") if isinstance(bulk, dict) else ""
+            my_user_plain = re.sub(r"<[^>]+>", " ", my_user_html)
+            my_user_plain = re.sub(r"\s+", " ", my_user_plain).strip()
+            if my_user_plain:
+                account_name = re.split(
+                    r"\b(Serviciile mele|Administrare cont|Facturile mele|Comenzile mele|Logout)\b",
+                    my_user_plain,
+                    maxsplit=1,
+                )[0].strip() or None
+        except Exception:
+            account_name = None
+
+        address_match = re.search(r"Toate adresele\s+(.+?)\s+Serviciile mele", re.sub(r"<[^>]+>", " ", html), re.I | re.S)
+        current_address = re.sub(r"\s+", " ", address_match.group(1)).strip() if address_match else None
+        invoices_count = len(invoice_ids)
+
         inv = invoice_ids[0]
         details_path = f"/my-account/invoices/details?invoice_id={inv}"
         payload = {
@@ -88,5 +112,8 @@ class DigiApiClient:
             "status": status,
             "is_paid": is_paid,
             "services_count": services_count,
+            "account_name": account_name,
+            "current_address": current_address,
+            "invoices_count": invoices_count,
             "raw_excerpt": plain[:800],
         }

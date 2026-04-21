@@ -21,6 +21,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         DigiInvoiceSensor(coordinator, "invoice_number", "Digi număr factură", None, "mdi:barcode"),
         DigiInvoiceSensor(coordinator, "is_paid", "Digi factură achitată", None, "mdi:check-decagram"),
         DigiInvoiceSensor(coordinator, "services_count", "Digi poziții servicii factură", None, "mdi:format-list-numbered"),
+        DigiInvoiceSensor(coordinator, "account_name", "Digi nume cont", None, "mdi:account"),
+        DigiInvoiceSensor(coordinator, "current_address", "Digi adresă curentă", None, "mdi:home-city"),
+        DigiInvoiceSensor(coordinator, "invoices_count", "Digi număr facturi detectate", None, "mdi:file-multiple"),
     ])
 
 
