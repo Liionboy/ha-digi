@@ -42,7 +42,12 @@ class DigiInvoiceSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self):
-        return (self.coordinator.data or {}).get(self._key)
+        data = self.coordinator.data or {}
+        value = data.get(self._key)
+        if self._key == "due_date" and value in (None, "", "unknown"):
+            if data.get("is_paid") is True:
+                return "Fără scadență"
+        return value
 
     @property
     def extra_state_attributes(self):
