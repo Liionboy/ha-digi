@@ -65,15 +65,28 @@ class DigiApiClient:
         plain = re.sub(r"\s+", " ", plain).strip()
 
         date_match = re.search(r"din data de\s+([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain, re.I)
+        invoice_no_match = re.search(r"\bFactura\s+([A-Z0-9\- ]{4,})\b", plain)
         total_match = re.search(r"\bTotal\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain, re.I)
         rest_match = re.search(r"\bRest\s+([0-9]+(?:[.,][0-9]{2})?)\s+LEI", plain, re.I)
         status_match = re.search(r"\bStatus\s+([A-Za-zĂÂÎȘȚăâîșț\-]+)", plain)
+        due_match = re.search(r"\bScaden(?:ta|ță|\u021b\u0103)\s*[:\-]?\s*([0-9]{2}[-./][0-9]{2}[-./][0-9]{4})", plain, re.I)
+
+        services_count = len(set(re.findall(r"\b1\.([0-9]{1,2})\b", plain)))
+        status = status_match.group(1) if status_match else None
+        is_paid = None
+        if status:
+            status_l = status.lower()
+            is_paid = ("achitat" in status_l) or ("platit" in status_l) or ("plătit" in status_l)
 
         return {
             "invoice_id": inv,
+            "invoice_number": invoice_no_match.group(1).strip() if invoice_no_match else None,
             "date": date_match.group(1) if date_match else None,
+            "due_date": due_match.group(1) if due_match else None,
             "total_lei": total_match.group(1).replace(",", ".") if total_match else None,
             "rest_lei": rest_match.group(1).replace(",", ".") if rest_match else None,
-            "status": status_match.group(1) if status_match else None,
+            "status": status,
+            "is_paid": is_paid,
+            "services_count": services_count,
             "raw_excerpt": plain[:800],
         }
