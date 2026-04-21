@@ -44,20 +44,29 @@ Atribute utile:
 
 ---
 
-## Cum iei cookie-ul de sesiune Digi
+## Cum iei cookie-ul de sesiune Digi (metoda recomandată)
 
 > Important: fă întâi login normal pe https://www.digi.ro (cu SMS/2FA dacă e activ)
 
-### Chrome / Edge / Brave
+### Chrome / Edge / Brave (exact)
 
 1. Deschide `https://www.digi.ro/my-account/invoices`
-2. Apasă `F12` → tab **Application** (sau Storage)
-3. Mergi la **Cookies** → `https://www.digi.ro`
-4. Copiază cookie-urile relevante în format header:
-   - `name=value; name2=value2; ...`
-5. Pune acest string în câmpul `Cookie sesiune Digi` din integrare
+2. Apasă `F12` → tab **Network**
+3. Dă refresh paginii
+4. Click pe request-ul:
+   - `invoices/details?invoice_id=...` (ideal), sau
+   - `/my-account/invoices`
+5. În dreapta: **Headers** → **Request Headers**
+6. Copiază valoarea header-ului **cookie**
 
-Dacă nu merge din prima, folosește cookie-urile complete din request-ul către `/my-account/invoices`.
+Exemplu:
+- minim: `DGROSESSV3PRI=...`
+- complet (dacă minim nu merge): `name=value; name2=value2; ...`
+
+7. Pune această valoare în integrare, câmpul `Cookie sesiune Digi`.
+
+### Observație
+Dacă primești eroare de sesiune, recopiază cookie-ul din request-ul `invoices/details` (de obicei e cel mai sigur).
 
 ---
 
