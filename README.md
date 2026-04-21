@@ -4,7 +4,7 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.11` (MVP)
+- Versiune: `0.1.12` (MVP)
 - Domeniu integrare: `digi_ro`
 - Auth: cookie de sesiune DIGI (login deja făcut în browser, inclusiv SMS/2FA)
 - Brand assets (HACS/HA):
@@ -121,6 +121,11 @@ Flux MVP:
 - Recomandat: 900-3600 sec
 
 ---
+
+## Noutăți v0.1.12
+- Detectare sesiune expirată (`DigiReauthRequired`) și trigger reauth în Home Assistant
+- Pas de reauth în Config Flow pentru update cookie fără ștergere/re-adăugare integrare
+- Senzor nou `Digi health` cu status `OK` / `Needs Reauth`
 
 ## Noutăți v0.1.11
 - Suport multi-cont (evitare conflict `unique_id` între config entries)

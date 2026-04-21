@@ -12,6 +12,7 @@ from .const import ATTRIBUTION, DOMAIN
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([
+        DigiHealthSensor(entry, coordinator),
         DigiInvoiceSensor(entry, coordinator, "total_lei", "Digi total ultima factură", "lei", "mdi:cash-multiple"),
         DigiInvoiceSensor(entry, coordinator, "rest_lei", "Digi rest de plată", "lei", "mdi:cash-clock"),
         DigiInvoiceSensor(entry, coordinator, "status", "Digi status ultima factură", None, "mdi:file-document-check"),
@@ -27,6 +28,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         DigiInvoiceSensor(entry, coordinator, "invoices_count", "Digi număr facturi detectate", None, "mdi:file-multiple"),
         DigiRecentInvoicesSensor(entry, coordinator),
     ])
+
+
+class DigiHealthSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, entry: ConfigEntry, coordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_name = "Digi health"
+        self._attr_unique_id = f"digi_ro_{entry.entry_id}_health"
+        self._attr_icon = "mdi:heart-pulse"
+
+    @property
+    def native_value(self):
+        return "OK" if getattr(self.coordinator, "auth_ok", True) else "Needs Reauth"
 
 
 class DigiInvoiceSensor(CoordinatorEntity, SensorEntity):

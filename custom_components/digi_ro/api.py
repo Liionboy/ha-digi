@@ -13,6 +13,10 @@ class DigiApiError(Exception):
     pass
 
 
+class DigiReauthRequired(DigiApiError):
+    pass
+
+
 class DigiApiClient:
     def __init__(self, cookie: str) -> None:
         self._cookie = cookie.strip()
@@ -51,9 +55,11 @@ class DigiApiClient:
 
     async def fetch_latest_invoice(self) -> dict:
         html = await self._get_text("/my-account/invoices")
+        if "/auth/login" in html or "signin-input-email" in html:
+            raise DigiReauthRequired("Sesiune expirată, necesar reauth")
         invoice_ids = sorted(set(re.findall(r"invoice_id=(\d+)", html)), reverse=True)
         if not invoice_ids:
-            raise DigiApiError("Nu am găsit invoice_id. Posibil sesiune expirată.")
+            raise DigiReauthRequired("Nu am găsit invoice_id. Posibil sesiune expirată.")
 
         # Extragere rapidă istoric facturi din lista principală
         html_plain = re.sub(r"<[^>]+>", " ", html)

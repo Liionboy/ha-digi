@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import DigiApiClient, DigiApiError
+from .api import DigiApiClient, DigiApiError, DigiReauthRequired
 
 
 class DigiCoordinator(DataUpdateCoordinator):
@@ -17,9 +18,15 @@ class DigiCoordinator(DataUpdateCoordinator):
             update_interval=update_interval,
         )
         self.api = api
+        self.auth_ok = True
 
     async def _async_update_data(self) -> dict:
         try:
-            return await self.api.fetch_latest_invoice()
+            data = await self.api.fetch_latest_invoice()
+            self.auth_ok = True
+            return data
+        except DigiReauthRequired as err:
+            self.auth_ok = False
+            raise ConfigEntryAuthFailed(str(err)) from err
         except DigiApiError as err:
             raise UpdateFailed(str(err)) from err
