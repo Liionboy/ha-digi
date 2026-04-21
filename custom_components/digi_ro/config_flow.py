@@ -111,10 +111,17 @@ class DigiConfigFlow(ConfigFlow, domain=DOMAIN):
 
         assert self._api is not None
         method = user_input["method"]
-        await self._api.send_2fa_code(
-            TwoFactorContext(methods=self._twofa_context["methods"], html=self._twofa_context.get("html", "")),
-            method,
-        )
+        try:
+            await self._api.send_2fa_code(
+                TwoFactorContext(methods=self._twofa_context["methods"], html=self._twofa_context.get("html", "")),
+                method,
+            )
+        except DigiTwoFactorError:
+            return self.async_show_form(
+                step_id="2fa_method",
+                data_schema=vol.Schema({vol.Required("method", default=methods[0]): vol.In(methods)}),
+                errors={"base": "cannot_connect"},
+            )
         self._auth_data["method"] = method
         return await self.async_step_2fa_code()
 
