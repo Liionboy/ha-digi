@@ -12,29 +12,29 @@ from .const import ATTRIBUTION, DOMAIN
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([
-        DigiInvoiceSensor(coordinator, "total_lei", "Digi total ultima factură", "lei", "mdi:cash-multiple"),
-        DigiInvoiceSensor(coordinator, "rest_lei", "Digi rest de plată", "lei", "mdi:cash-clock"),
-        DigiInvoiceSensor(coordinator, "status", "Digi status ultima factură", None, "mdi:file-document-check"),
-        DigiInvoiceSensor(coordinator, "date", "Digi data ultimei facturi", None, "mdi:calendar"),
-        DigiInvoiceSensor(coordinator, "due_date", "Digi scadență ultima factură", None, "mdi:calendar-alert"),
-        DigiInvoiceSensor(coordinator, "invoice_id", "Digi invoice ID", None, "mdi:identifier"),
-        DigiInvoiceSensor(coordinator, "invoice_number", "Digi număr factură", None, "mdi:barcode"),
-        DigiInvoiceSensor(coordinator, "is_paid", "Digi factură achitată", None, "mdi:check-decagram"),
-        DigiInvoiceSensor(coordinator, "has_debt", "Digi are rest de plată", None, "mdi:alert-circle"),
-        DigiInvoiceSensor(coordinator, "services_count", "Digi poziții servicii factură", None, "mdi:format-list-numbered"),
-        DigiInvoiceSensor(coordinator, "account_name", "Digi nume cont", None, "mdi:account"),
-        DigiInvoiceSensor(coordinator, "current_address", "Digi adresă curentă", None, "mdi:home-city"),
-        DigiInvoiceSensor(coordinator, "invoices_count", "Digi număr facturi detectate", None, "mdi:file-multiple"),
-        DigiRecentInvoicesSensor(coordinator),
+        DigiInvoiceSensor(entry, coordinator, "total_lei", "Digi total ultima factură", "lei", "mdi:cash-multiple"),
+        DigiInvoiceSensor(entry, coordinator, "rest_lei", "Digi rest de plată", "lei", "mdi:cash-clock"),
+        DigiInvoiceSensor(entry, coordinator, "status", "Digi status ultima factură", None, "mdi:file-document-check"),
+        DigiInvoiceSensor(entry, coordinator, "date", "Digi data ultimei facturi", None, "mdi:calendar"),
+        DigiInvoiceSensor(entry, coordinator, "due_date", "Digi scadență ultima factură", None, "mdi:calendar-alert"),
+        DigiInvoiceSensor(entry, coordinator, "invoice_id", "Digi invoice ID", None, "mdi:identifier"),
+        DigiInvoiceSensor(entry, coordinator, "invoice_number", "Digi număr factură", None, "mdi:barcode"),
+        DigiInvoiceSensor(entry, coordinator, "is_paid", "Digi factură achitată", None, "mdi:check-decagram"),
+        DigiInvoiceSensor(entry, coordinator, "has_debt", "Digi are rest de plată", None, "mdi:alert-circle"),
+        DigiInvoiceSensor(entry, coordinator, "services_count", "Digi poziții servicii factură", None, "mdi:format-list-numbered"),
+        DigiInvoiceSensor(entry, coordinator, "account_name", "Digi nume cont", None, "mdi:account"),
+        DigiInvoiceSensor(entry, coordinator, "current_address", "Digi adresă curentă", None, "mdi:home-city"),
+        DigiInvoiceSensor(entry, coordinator, "invoices_count", "Digi număr facturi detectate", None, "mdi:file-multiple"),
+        DigiRecentInvoicesSensor(entry, coordinator),
     ])
 
 
 class DigiInvoiceSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator, key: str, name: str, unit: str | None, icon: str | None = None) -> None:
+    def __init__(self, entry: ConfigEntry, coordinator, key: str, name: str, unit: str | None, icon: str | None = None) -> None:
         super().__init__(coordinator)
         self._key = key
         self._attr_name = name
-        self._attr_unique_id = f"digi_ro_{key}"
+        self._attr_unique_id = f"digi_ro_{entry.entry_id}_{key}"
         if unit:
             self._attr_native_unit_of_measurement = unit
         if icon:
@@ -59,10 +59,10 @@ class DigiInvoiceSensor(CoordinatorEntity, SensorEntity):
 
 
 class DigiRecentInvoicesSensor(CoordinatorEntity, SensorEntity):
-    def __init__(self, coordinator) -> None:
+    def __init__(self, entry: ConfigEntry, coordinator) -> None:
         super().__init__(coordinator)
         self._attr_name = "Digi facturi recente"
-        self._attr_unique_id = "digi_ro_recent_invoices"
+        self._attr_unique_id = f"digi_ro_{entry.entry_id}_recent_invoices"
         self._attr_icon = "mdi:history"
 
     @property
