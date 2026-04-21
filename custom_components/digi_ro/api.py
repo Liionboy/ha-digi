@@ -351,6 +351,8 @@ class DigiApiClient:
     async def async_fetch_data(self, history_limit: int = 5) -> dict[str, Any]:
         resp = await self._request("GET", INVOICES_URL, allow_redirects=True)
         html = await self._read_text(resp)
+        html_plain = re.sub(r"<[^>]+>", " ", html)
+        html_plain = re.sub(r"\s+", " ", html_plain).strip()
         final_url = str(resp.url)
         if "/auth/login" in final_url or "/auth/2fa" in final_url or "/auth/address-select" in final_url:
             raise DigiReauthRequired("Session expired")
@@ -400,6 +402,41 @@ class DigiApiClient:
         items = sorted(grouped[selected_key], key=lambda x: self._parse_date_for_sort(x.get("issue_date")), reverse=True)
         latest = items[0]
 
+        account_name = None
+        try:
+            bulk_resp = await self._request(
+                "POST",
+                f"{API_BASE}/app-user-info-bulk-xhr",
+                data={"disableUserInfo": "", "isBusinessSection": "0"},
+                allow_redirects=True,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Origin": API_BASE,
+                    "Referer": INVOICES_URL,
+                },
+            )
+            bulk_raw = await self._read_text(bulk_resp)
+            bulk = json.loads(bulk_raw) if bulk_raw else {}
+            my_user_html = bulk.get("my-user", "") if isinstance(bulk, dict) else ""
+            my_user_plain = re.sub(r"<[^>]+>", " ", my_user_html)
+            my_user_plain = re.sub(r"\s+", " ", my_user_plain).strip()
+            if my_user_plain:
+                account_name = re.split(
+                    r"\b(Serviciile mele|Administrare cont|Facturile mele|Comenzile mele|Logout)\b",
+                    my_user_plain,
+                    maxsplit=1,
+                )[0].strip() or None
+        except Exception:
+            account_name = None
+
+        if not account_name:
+            m = re.search(r"Toate adresele\s+(.+?)\s+Serviciile mele", html_plain, re.I | re.S)
+            account_name = re.sub(r"\s+", " ", m.group(1)).strip() if m else None
+
+        if not account_name:
+            account_name = latest.get("address") or "Cont Digi"
+
         return {
             "invoice_id": latest.get("invoice_id"),
             "invoice_number": latest.get("invoice_number"),
@@ -411,7 +448,7 @@ class DigiApiClient:
             "is_paid": (latest.get("rest") or 0) <= 0,
             "has_debt": (latest.get("rest") or 0) > 0,
             "services_count": len(latest.get("services") or []),
-            "account_name": None,
+            "account_name": account_name,
             "current_address": latest.get("address"),
             "invoices_count": len(items),
             "recent_invoices": [
