@@ -75,6 +75,7 @@ class DigiConfigFlow(ConfigFlow, domain=DOMAIN):
         session = async_get_clientsession(self.hass)
         self._api = DigiApiClient(session)
         self._auth_data[CONF_USERNAME] = user_input[CONF_USERNAME]
+        self._auth_data[CONF_PASSWORD] = user_input[CONF_PASSWORD]
 
         try:
             final_url, html = await self._api.begin_login(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
@@ -171,13 +172,19 @@ class DigiConfigFlow(ConfigFlow, domain=DOMAIN):
         except Exception:
             return self.async_abort(reason="cannot_connect")
 
+        data = {
+            CONF_COOKIES: self._api.export_cookies(),
+            CONF_SELECTED_ADDRESS: self._auth_data.get(CONF_SELECTED_ADDRESS, ""),
+            CONF_UPDATE_INTERVAL: self._auth_data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+        }
+        # Save credentials for auto-relogin when session expires
+        if self._auth_data.get(CONF_USERNAME):
+            data[CONF_USERNAME] = self._auth_data[CONF_USERNAME]
+            data[CONF_PASSWORD] = self._auth_data.get(CONF_PASSWORD, "")
+
         return self.async_create_entry(
             title=f"Digi România ({self._auth_data.get(CONF_USERNAME, 'cont')})",
-            data={
-                CONF_COOKIES: self._api.export_cookies(),
-                CONF_SELECTED_ADDRESS: self._auth_data.get(CONF_SELECTED_ADDRESS, ""),
-                CONF_UPDATE_INTERVAL: self._auth_data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
-            },
+            data=data,
         )
 
     async def async_step_reauth(self, user_input: dict[str, Any] | None = None):
@@ -185,16 +192,61 @@ class DigiConfigFlow(ConfigFlow, domain=DOMAIN):
         if entry is None:
             return self.async_abort(reason="reauth_unsuccessful")
 
+        has_login_creds = bool(entry.data.get(CONF_USERNAME))
+
         if user_input is not None:
             data = {**entry.data}
-            if CONF_COOKIE in user_input:
+            reauth_method = user_input.get("reauth_method", "cookie")
+
+            if reauth_method == "login" and CONF_USERNAME in user_input:
+                # Re-login with credentials
+                session = async_get_clientsession(self.hass)
+                api = DigiApiClient(session)
+                try:
+                    final_url, html = await api.begin_login(
+                        user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
+                    )
+                except DigiAuthError:
+                    schema = vol.Schema({
+                        vol.Required("reauth_method", default="login"): vol.In(["login", "cookie"]),
+                        vol.Required(CONF_USERNAME): str,
+                        vol.Required(CONF_PASSWORD): str,
+                    })
+                    return self.async_show_form(step_id="reauth", data_schema=schema, errors={"base": "invalid_auth"})
+
+                if "/auth/address-select" in final_url:
+                    options = await api.get_address_options(html)
+                    if options:
+                        addr = entry.data.get(CONF_SELECTED_ADDRESS, "")
+                        if addr:
+                            await api.confirm_address(addr)
+
+                data[CONF_USERNAME] = user_input[CONF_USERNAME]
+                data[CONF_PASSWORD] = user_input[CONF_PASSWORD]
+                data[CONF_COOKIES] = api.export_cookies()
+                await api.close()
+
+            elif CONF_COOKIE in user_input:
+                # Legacy cookie method
                 session = async_get_clientsession(self.hass)
                 api = DigiApiClient(session)
                 api.import_cookie_header(user_input[CONF_COOKIE])
                 data[CONF_COOKIES] = api.export_cookies()
+                await api.close()
+
             self.hass.config_entries.async_update_entry(entry, data=data)
             await self.hass.config_entries.async_reload(entry.entry_id)
             return self.async_abort(reason="reauth_successful")
 
-        schema = vol.Schema({vol.Required(CONF_COOKIE): str})
+        # Show form based on what credentials are available
+        if has_login_creds:
+            schema = vol.Schema({
+                vol.Required("reauth_method", default="login"): vol.In(["login", "cookie"]),
+                vol.Optional(CONF_USERNAME, default=entry.data.get(CONF_USERNAME, "")): str,
+                vol.Optional(CONF_PASSWORD): str,
+                vol.Optional(CONF_COOKIE): str,
+            })
+        else:
+            schema = vol.Schema({vol.Required(CONF_COOKIE): str})
+
         return self.async_show_form(step_id="reauth", data_schema=schema)

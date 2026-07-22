@@ -8,6 +8,7 @@ CONF_AUTH_METHOD = "auth_method"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 CONF_SELECTED_ADDRESS = "selected_address"
+CONF_HAS_2FA = "has_2fa"
 
 AUTH_METHOD_COOKIE = "cookie"
 AUTH_METHOD_LOGIN = "login"

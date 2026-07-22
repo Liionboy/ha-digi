@@ -8,7 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import DigiApiClient
-from .const import CONF_COOKIE, CONF_COOKIES, CONF_SELECTED_ADDRESS, CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL, DOMAIN, PLATFORMS
+from .const import CONF_COOKIE, CONF_COOKIES, CONF_PASSWORD, CONF_SELECTED_ADDRESS, CONF_UPDATE_INTERVAL, CONF_USERNAME, DEFAULT_UPDATE_INTERVAL, DOMAIN, PLATFORMS
 from .coordinator import DigiCoordinator
 
 
@@ -22,7 +22,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         api.import_cookie_header(entry.data[CONF_COOKIE])
 
     interval = entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
-    coordinator = DigiCoordinator(hass, api, timedelta(seconds=interval))
+    coordinator = DigiCoordinator(
+        hass,
+        api,
+        timedelta(seconds=interval),
+        username=entry.data.get(CONF_USERNAME),
+        password=entry.data.get(CONF_PASSWORD),
+        entry_id=entry.entry_id,
+    )
 
     try:
         await coordinator.async_config_entry_first_refresh()
