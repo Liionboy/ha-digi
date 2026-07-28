@@ -1,6 +1,9 @@
 {
   "name": "Digi România",
   "content_in_root": false,
-  "domains": ["digi_ro"],
-  "render_readme": true
+  "domains": [
+    "digi_ro"
+  ],
+  "render_readme": true,
+  "homeassistant": "2024.1.0"
 }
