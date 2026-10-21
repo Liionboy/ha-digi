@@ -4,7 +4,7 @@ Integrare custom Home Assistant pentru **DIGI România** (My Account), bazată p
 
 ## Status
 
-- Versiune: `0.1.18` (MVP)
+- Versiune: `0.1.21`
 - Domeniu integrare: `digi_ro`
 - Auth: login user/parolă + 2FA (SMS) sau cookie sesiune DIGI
 - Brand assets (HACS/HA):
@@ -108,6 +108,47 @@ Flux MVP:
 - Dacă sesiunea expiră (sau invalidare server-side), integrarea cere reauth.
 - DIGI poate schimba markup-ul HTML/flow-ul de autentificare oricând.
 - 2FA depinde de endpoint-urile web Digi (fără API oficial public stabil).
+
+## Session recovery (v0.1.21)
+
+Requires **Home Assistant 2024.4 or newer**, which provides the integration
+Reconfigure action.
+
+After updating in HACS, **restart Home Assistant** to load the new Python code.
+Go to **Settings → Devices & services → Digi România**, open the **three-dot
+menu for the affected account**, and choose **Reconfigure**. Select `login`,
+enter that account's username and password, choose the available 2FA method,
+and enter the code sent by DIGI. Repeat separately for each affected account.
+
+The same interactive 2FA steps are now used by Home Assistant's automatic
+reauthentication dialog when a session expires. Automatic background login
+still cannot complete SMS/2FA without your input.
+
+Reconfiguration updates the existing entry: its ID, custom title, saved
+address, polling interval and unrelated settings are retained. Existing sensors
+and automations do not need to be recreated. If DIGI no longer lists the saved
+address, recovery stops rather than silently selecting a different address.
+
+For legacy cookie-only entries, choose `cookie` and paste a fresh authenticated
+Cookie header, or choose `login` to enable credential-based recovery. Cookies
+are checked before saving; failed authentication leaves the entry unchanged.
+Never share passwords, SMS codes or session cookies in logs or issue reports.
+
+The old Lovelace card's **Reauth** button only opens sensor details; use the
+integration's **Reconfigure** menu for the complete recovery flow.
+
+### Offline regression tests
+
+In a separate Python virtual environment, run:
+
+```sh
+python -m pip install -r tests/requirements.txt
+python -m pytest -q
+```
+
+The suite uses small Home Assistant API doubles plus real aiohttp cookie jars.
+It does not install Home Assistant or contact DIGI. Native HA dialog rendering
+and live DIGI/SMS authentication still require verification in a real instance.
 
 ---
 

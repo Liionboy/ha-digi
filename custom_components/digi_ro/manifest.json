@@ -1,9 +1,9 @@
 {
   "domain": "digi_ro",
   "name": "Digi România",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "documentation": "https://www.digi.ro",
-  "homeassistant": "2024.1.0",
+  "homeassistant": "2024.4.0",
   "requirements": [],
   "codeowners": [
     "@Liionboy"

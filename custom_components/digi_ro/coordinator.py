@@ -42,6 +42,8 @@ class DigiCoordinator(DataUpdateCoordinator):
             return False
 
         _LOGGER.info("Session expired for Digi, attempting auto re-login for %s", self._username)
+        new_api = None
+        adopted = False
         try:
             # Create a fresh API client to clear old cookies
             session = async_get_clientsession(self.hass)
@@ -65,6 +67,7 @@ class DigiCoordinator(DataUpdateCoordinator):
             # Success! Replace the old API client
             await self.api.close()
             self.api = new_api
+            adopted = True
             self.auth_ok = True
 
             # Persist new cookies to config entry
@@ -86,6 +89,9 @@ class DigiCoordinator(DataUpdateCoordinator):
         except Exception as err:
             _LOGGER.error("Digi auto re-login error for %s: %s", self._username, err)
             return False
+        finally:
+            if new_api is not None and not adopted:
+                await new_api.close()
 
     async def _async_update_data(self) -> dict:
         try:

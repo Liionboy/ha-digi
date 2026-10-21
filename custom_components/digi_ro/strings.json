@@ -3,12 +3,75 @@
     "step": {
       "user": {
         "title": "Digi România",
-        "description": "Introdu cookie-ul de sesiune Digi și intervalul de update.",
+        "description": "Choose login (username, password and interactive 2FA) or an authenticated session cookie.",
         "data": {
-          "cookie": "Cookie sesiune Digi",
-          "update_interval": "Interval update (secunde)"
+          "auth_method": "Authentication method",
+          "update_interval": "Update interval (seconds)"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconnect Digi account",
+        "description": "Renew this existing account session without deleting its sensors. Choose login to enter your password and the DIGI 2FA code, or cookie to import a fresh browser session.",
+        "data": {
+          "auth_method": "Authentication method"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Digi session expired",
+        "description": "Sign in again to renew the session for this account. If DIGI requires 2FA, you will be asked for the code.",
+        "data": {
+          "auth_method": "Authentication method"
+        }
+      },
+      "login": {
+        "title": "Sign in to Digi",
+        "description": "Enter the credentials of this Digi account. Reconnecting an existing account cannot change its username.",
+        "data": {
+          "username": "Username (email)",
+          "password": "Password"
+        }
+      },
+      "cookie": {
+        "title": "Digi session cookie",
+        "description": "Paste the Cookie request header from an authenticated DIGI browser session. The session will be verified before saving.",
+        "data": {
+          "cookie": "Session cookie"
+        }
+      },
+      "2fa_method": {
+        "title": "Digi two-factor authentication",
+        "description": "Choose a method to request a verification code from DIGI.",
+        "data": {
+          "method": "Verification method"
+        }
+      },
+      "2fa_code": {
+        "title": "Enter the Digi verification code",
+        "description": "Enter the code sent by DIGI. If it is incorrect, you can try again without deleting the account.",
+        "data": {
+          "code": "Verification code"
+        }
+      },
+      "address_select": {
+        "title": "Select Digi address",
+        "description": "Choose the service address for this account.",
+        "data": {
+          "address": "Service address"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to DIGI. Try again.",
+      "invalid_auth": "Invalid credentials, expired session or invalid verification code. Try again.",
+      "account_mismatch": "Use the same username as this existing entry. Add a separate integration entry for a different account."
+    },
+    "abort": {
+      "reauth_successful": "Authentication renewed successfully.",
+      "reconfigure_successful": "Account reconnected successfully. Existing sensors have been preserved.",
+      "reauth_unsuccessful": "The existing Digi entry was not found. Open the account integration and try again.",
+      "cannot_connect": "Could not verify the DIGI session. No changes were saved.",
+      "invalid_auth": "The session is not authenticated. No changes were saved. Please reconnect again.",
+      "address_unavailable": "DIGI no longer lists the saved service address. No changes were saved; check the addresses in your DIGI account."
     }
   }
 }

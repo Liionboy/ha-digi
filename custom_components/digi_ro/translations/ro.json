@@ -3,12 +3,75 @@
     "step": {
       "user": {
         "title": "Digi România",
-        "description": "Introdu cookie-ul de sesiune Digi și intervalul de update.",
+        "description": "Alege login (utilizator, parolă și cod 2FA) sau un cookie de sesiune autentificată.",
         "data": {
-          "cookie": "Cookie sesiune Digi",
-          "update_interval": "Interval update (secunde)"
+          "auth_method": "Metodă de autentificare",
+          "update_interval": "Interval de actualizare (secunde)"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconectare cont Digi",
+        "description": "Reînnoiește sesiunea contului existent fără ștergerea senzorilor. Alege login pentru parolă și codul 2FA DIGI sau cookie pentru o sesiune nouă din browser.",
+        "data": {
+          "auth_method": "Metodă de autentificare"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sesiunea Digi a expirat",
+        "description": "Autentifică-te din nou pentru acest cont. Dacă DIGI solicită 2FA, vei putea introduce codul de verificare.",
+        "data": {
+          "auth_method": "Metodă de autentificare"
+        }
+      },
+      "login": {
+        "title": "Autentificare Digi",
+        "description": "Introdu datele acestui cont Digi. La reconectare nu se poate schimba utilizatorul contului existent.",
+        "data": {
+          "username": "Utilizator (e-mail)",
+          "password": "Parolă"
+        }
+      },
+      "cookie": {
+        "title": "Cookie de sesiune Digi",
+        "description": "Lipește valoarea antetului Cookie dintr-o sesiune DIGI autentificată în browser. Sesiunea va fi verificată înainte de salvare.",
+        "data": {
+          "cookie": "Cookie de sesiune"
+        }
+      },
+      "2fa_method": {
+        "title": "Autentificare Digi în doi pași",
+        "description": "Alege metoda prin care DIGI îți trimite codul de verificare.",
+        "data": {
+          "method": "Metodă de verificare"
+        }
+      },
+      "2fa_code": {
+        "title": "Introdu codul de verificare Digi",
+        "description": "Introdu codul trimis de DIGI. Dacă este greșit, poți încerca din nou fără să ștergi contul.",
+        "data": {
+          "code": "Cod de verificare"
+        }
+      },
+      "address_select": {
+        "title": "Selectează adresa Digi",
+        "description": "Alege adresa serviciilor pentru acest cont.",
+        "data": {
+          "address": "Adresă servicii"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Conectarea la DIGI a eșuat. Încearcă din nou.",
+      "invalid_auth": "Date de autentificare incorecte, sesiune expirată sau cod de verificare invalid. Încearcă din nou.",
+      "account_mismatch": "Folosește același utilizator ca în contul existent. Pentru alt cont, adaugă o integrare separată."
+    },
+    "abort": {
+      "reauth_successful": "Autentificarea a fost reînnoită.",
+      "reconfigure_successful": "Contul a fost reconectat. Senzorii existenți au fost păstrați.",
+      "reauth_unsuccessful": "Contul Digi existent nu a fost găsit. Deschide integrarea contului și încearcă din nou.",
+      "cannot_connect": "Sesiunea DIGI nu a putut fi verificată. Nu s-au salvat modificări.",
+      "invalid_auth": "Sesiunea nu este autentificată. Nu s-au salvat modificări. Reia reconectarea.",
+      "address_unavailable": "DIGI nu mai listează adresa salvată. Nu s-au salvat modificări; verifică adresele din contul DIGI."
     }
   }
 }
